@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 df = functionsForDashboard.loadAndPrepareData()
-
+z
 st.title("Afstand tabel")
 st.text("Hieronder is te zien hoeveel afstand er tot nu toe per persoon is afgelegd. Deze afstanden in deze tabel zijn " \
 "afgerond per maand, per persoon. Hierdoor kan het totaal in deze tabel mogelijk iets verschillen van het totaal dat " \
@@ -30,6 +30,6 @@ st.dataframe(dfGroupedMonthPivot[dfGroupedMonthPivot["Totaal"] > 0],
 
 st.subheader("Extra inzichten")
 
-selectedView = st.selectbox("Selecteer hier welke informatie je wil tonen", options = dashboardViews.views)
+selectedView = st.pills("Selecteer hier welke informatie je wil tonen", options = dashboardViews.views, default = dashboardViews.views[0])
 
 dashboardViews.getView(selectedView, df)
