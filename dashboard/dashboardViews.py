@@ -47,19 +47,36 @@ def distanceRunProgressionView(df=pd.DataFrame):
     yMin = math.floor(min(dataPerDay[dataPerDay["Datum"] == startDate]["Afstand"]) / 100) * 100
     yMax = math.ceil(max(distanceToday, distanceGoalToday) / 100) * 100
     
-    # Update plot view settings
-    plotPerDay.update_xaxes(range=[startDate, endDate])
-    plotPerDay.update_yaxes(range=[yMin, yMax])
-    plotPerDay.update_layout(dragmode="pan")
-
     # Text strings
     if distanceToday < distanceGoalToday:
         text = "Dat betekend dat we op dit moment: " + str(round(distanceGoalToday - distanceToday, 1)) + " kilometer achter lopen op schema om het doel van " + totalGoalDistance + " kilometer te halen."
     else: 
         text = "Dat betekend dat we op dit moment: " + str(round(distanceToday - distanceGoalToday, 1)) + " kilometer voor lopen op schema om het doel van " + totalGoalDistance + " kilometer te halen."
     
-    # Page
-    st.text("De totaal gelopen afstand dit jaar is: " + str(distanceToday) + " kilometer. " + text)
+    st.text("De totaal gelopen afstand dit jaar is: " + str(distanceToday) + " kilometer. " + text) 
+
+    # Update plot view settings
+    view = st.pills("Weergave grafiek:", ["Laatste maand", "Volledige jaar"], default="Laatste maand")
+
+    if view == "Laatste maand":
+        endDate = min(pd.Timestamp.today().normalize(), pd.Timestamp(2026, 12, 31))
+        startDate = endDate - pd.DateOffset(months=1)
+        yMin = math.floor(min(dataPerDay[dataPerDay["Datum"] == startDate]["Afstand"]) / 100) * 100
+        yMax = math.ceil(max(distanceToday, distanceGoalToday) / 100) * 100
+
+        plotPerDay.update_xaxes(range=[startDate, endDate])
+        plotPerDay.update_yaxes(range=[yMin, yMax])
+    elif view == "Volledige jaar":
+        endDate = min(pd.Timestamp.today().normalize(), pd.Timestamp(2026, 12, 31))
+        startDate = pd.Timestamp(2026, 1, 1)
+        yMin = math.floor(min(dataPerDay[dataPerDay["Datum"] == startDate]["Afstand"]) / 100) * 100
+        yMax = math.ceil(max(distanceToday, distanceGoalToday) / 100) * 100
+
+        plotPerDay.update_xaxes(range=[startDate, endDate])
+        plotPerDay.update_yaxes(range=[yMin, yMax])
+
+    plotPerDay.update_layout(dragmode="pan")
+
     st.plotly_chart(plotPerDay)
 
     return
@@ -71,7 +88,7 @@ def distancePerPersonView(df:pd.DataFrame):
     
     # Month slycer
     avalibleMonths = [month for id, month in functionsForDashboard.monthLabels.items() if int(id) <= (len(set(dfGroupedMonth["MonthName"])))]
-    selectedMonth = st.selectbox("Selecteer een maand", ["Alle maanden"] + avalibleMonths) 
+    selectedMonth = st.pills("Selecteer een maand", ["Alle maanden"] + avalibleMonths, default="Alle maanden")
 
     # Filter the data
     if selectedMonth == "Alle maanden":
@@ -101,7 +118,7 @@ def eddingtongView(df:pd.DataFrame):
     # Person selector
     personSlycer = df["Name"].unique().tolist()
     personSlycer.sort()
-    personSelect = st.selectbox("Selecteer een naam", personSlycer)
+    personSelect = st.pills("Selecteer een naam", personSlycer, default=personSlycer[0])
     
     # Data
     eddingtonData = functionsForDashboard.getEddingtonDataForPerson(df=df[df["Name"] == personSelect])
@@ -141,7 +158,7 @@ def distancePerDayView(df:pd.DataFrame):
     # Person selector
     personSlycer = df["Name"].unique().tolist()
     personSlycer.sort()
-    personSelect = st.selectbox("Selecteer een naam", ["Alles"] + personSlycer)
+    personSelect = st.pills("Selecteer een naam", ["Alles"] + personSlycer, default="Alles")
 
     # Filter the data
     if personSelect == "Alles":
